@@ -4,18 +4,25 @@ import numpy as np
 
 import genesis as gs
 
-
+def run_sim(scene, enable_vis):
+    for i in range(1000):
+        scene.step()
+    if enable_vis:
+        scene.viewer.stop()
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--vis", action="store_true", default=False)
+    parser.add_argument("-ㅊ", "--cpu", action="store_true", default=False)
     args = parser.parse_args()
 
     ########################## init ##########################
-    gs.init(seed=0, precision="32", logging_level="debug")
+    gs.init(seed=0, precision="32", logging_level="debug",  backend=gs.cpu if args.cpu else gs.gpu)
+   
 
     scene = gs.Scene(
         sim_options=gs.options.SimOptions(
             dt=2e-3,
+            gravity = (0, 0, -10)
         ),
         viewer_options=gs.options.ViewerOptions(
             camera_pos=(3.5, 1.0, 2.5),
@@ -39,9 +46,12 @@ def main():
     )
     scene.build()
 
-    for i in range(10000):
-        scene.step()
+    gs.tools.run_in_another_thread(
+        fn = run_sim,
+        args =(scene,args.vis)
+    )
 
+    scene.viewer.start()
 
 if __name__ == "__main__":
     main()

@@ -11,7 +11,7 @@ def main():
     args = parser.parse_args()
 
     ########################## init ##########################
-    gs.init(seed=0, precision="32", logging_level="debug")
+    gs.init(seed=0, precision="32", logging_level="debug",backend= gs.cpu)
 
     ########################## create a scene ##########################
 
@@ -70,6 +70,7 @@ def main():
         ),
         vis_mode="particle",
     )
+    ball = scene.add_entity(gs.morphs.Sphere(radius=0.04))
 
     ########################## cameras ##########################
     cam_0 = scene.add_camera(
@@ -88,25 +89,42 @@ def main():
     ########################## build ##########################
     scene.build()
 
+    # ###
+    # state = obj1.get_state()
+    # loss += torch.pow(state.pos - goal, 2).sum()
+    # state = ball.get_dofs_position()
+    # print(state)
+    
+    # import IPython; IPython.embed()
+    # ###
+
     ########################## forward + backward twice ##########################
     for _ in range(2):
+        cam_0.start_recording()
         scene.reset()
         horizon = 150
-        init_pos = gs.tensor([0.3, 0.1, 0.28], requires_grad=True)
-
+        # init_pos = gs.tensor([0.3, 0.1, 0.28], requires_grad=True)
+        init_pos = torch.tensor([0.3, 0.1, 0.28], requires_grad=True)
+                
         # forward pass
         print("forward")
         timer = gs.tools.Timer()
         stick.set_position(init_pos)
-        v_obj1_init = gs.tensor([0.0, -1.0, 0.0], requires_grad=True)
+        # v_obj1_init = gs.tensor([0.0, -1.0, 0.0], requires_grad=True)
+        v_obj1_init = torch.tensor([0.0, -1.0, 0.0], requires_grad=True)
         obj1.set_velocity(v_obj1_init)
-        pos_obj1_init = gs.tensor([0.3, 0.3, 0.1], requires_grad=True)
+        # pos_obj1_init = gs.tensor([0.3, 0.3, 0.1], requires_grad=True)
+        pos_obj1_init = torch.tensor([0.3, 0.3, 0.1], requires_grad=True)
+
         obj1.set_position(pos_obj1_init)
         loss = 0
         v_list = []
         w_list = []
         for i in range(horizon):
-            v_i = gs.tensor([0.0, 1.0, 0.0], requires_grad=True)
+            
+            # v_i = gs.tensor([0.0, 1.0, 0.0], requires_grad=True)
+            v_i = torch.tensor([0.0, 1.0, 0.0], requires_grad=True)
+
             # w_i = gs.tensor([2.0, 0.0, 0.0], requires_grad=True)
             # stick.set_velocity(vel=v_i, ang=w_i)
             stick.set_velocity(vel=v_i)
@@ -114,22 +132,25 @@ def main():
             # w_list.append(w_i)
 
             scene.step()
-            # img0 = cam_0.render()
-            # img1 = cam_1.render()
+            img0 = cam_0.render()
+            img1 = cam_1.render()
 
             # you can use a scene_state
             if i == 25:
                 # compute loss
-                goal = gs.tensor([0.5, 0.8, 0.05])
+                # goal = gs.tensor([0.5, 0.8, 0.05])
+                goal = torch.tensor([0.5, 0.8, 0.05])
                 mpm_particles = scene.get_state().solvers_state[3]
                 loss += torch.pow(mpm_particles.pos[mpm_particles.active == 1] - goal, 2).sum()
 
             # you can also use an entity's state
             if i == horizon - 1:
                 # compute loss
-                goal = gs.tensor([0.5, 0.8, 0.05])
+                # goal = gs.tensor([0.5, 0.8, 0.05])
+                goal = torch.tensor([0.5, 0.8, 0.05])
                 state = obj1.get_state()
                 loss += torch.pow(state.pos - goal, 2).sum()
+                print(loss)
 
         timer.stamp("forward took: ")
         # backward pass

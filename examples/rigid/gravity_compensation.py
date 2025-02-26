@@ -2,6 +2,11 @@ import argparse
 
 import genesis as gs
 
+def run_sim(scene,enable_vis):
+    for i in range(1000):
+        scene.step()
+    if enable_vis:
+        scene.viewer.stop()
 
 def main():
 
@@ -29,23 +34,33 @@ def main():
         gs.morphs.Plane(),
     )
     scene.add_entity(
-        gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml", pos=(0.0, 0.0, 0.0)),
+        gs.morphs.MJCF(
+            file="xml/franka_emika_panda/panda.xml", 
+            pos=(0.0, 0.0, 0.0)),
     )
     scene.add_entity(
         gs.morphs.MJCF(
             file="xml/franka_emika_panda/panda.xml",
-            pos=(0.0, 1.0, 0.0),
-        ),
+            pos=(0.0, 1.0, 0.0),),
         material=gs.materials.Rigid(gravity_compensation=0.5),
     )
     scene.add_entity(
-        gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml", pos=(0.0, 2.0, 0.0)),
+        gs.morphs.MJCF(
+            file="xml/franka_emika_panda/panda.xml", 
+            pos=(0.0, 2.0, 0.0)),
         material=gs.materials.Rigid(gravity_compensation=1.0),
     )
 
     scene.build()
-    for i in range(1000):
-        scene.step()
+
+    gs.tools.run_in_another_thread(
+        fn = run_sim,
+        args = (scene,args.vis)
+    )
+
+    if args.vis:
+        scene.viewer.start()
+
 
 
 if __name__ == "__main__":

@@ -9,7 +9,8 @@ def gs_rand_float(lower, upper, shape, device):
 
 
 class HoverEnv:
-    def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, show_viewer=False, device="cuda"):
+    # def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, show_viewer=False, device="cuda"):
+    def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, show_viewer=False, device="mps"):
         self.device = torch.device(device)
 
         self.num_envs = num_envs
@@ -113,6 +114,14 @@ class HoverEnv:
         self.last_base_pos = torch.zeros_like(self.base_pos)
 
         self.extras = dict()  # extra information for logging
+
+        # if show_viewer:
+        #     self.scene.viewer.start()    
+        # ## mac vis
+        # gs.tools.run_in_another_thread(
+        #     fn = self.step,
+        #     args = (self,self.actions),
+        # )
 
     def _resample_commands(self, envs_idx):
         self.commands[envs_idx, 0] = gs_rand_float(*self.command_cfg["pos_x_range"], (len(envs_idx),), self.device)

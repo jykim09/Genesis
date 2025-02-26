@@ -2,6 +2,11 @@ import argparse
 
 import genesis as gs
 
+def run_sim(scene,enable_vis):
+    for i in range(800):
+        scene.step()
+    if enable_vis:
+        scene.viewer.stop()
 
 def main():
     parser = argparse.ArgumentParser()
@@ -9,14 +14,15 @@ def main():
     args = parser.parse_args()
 
     ########################## init ##########################
-    gs.init(seed=0, precision="32", logging_level="debug")
+    gs.init(seed=0, precision="32", logging_level="debug", backend= gs.metal)
 
     ########################## create a scene ##########################
 
     scene = gs.Scene(
         sim_options=gs.options.SimOptions(
-            dt=2e-3,
+            dt = 2e-3,
             substeps=10,
+            gravity = (0, 0, -9.81),
         ),
         vis_options=gs.options.VisOptions(
             visualize_sph_boundary=True,
@@ -40,9 +46,7 @@ def main():
     )
 
     ########################## entities ##########################
-    plane = scene.add_entity(
-        morph=gs.morphs.Plane(),
-    )
+
     water = scene.add_entity(
         material=gs.materials.SPH.Liquid(),
         morph=gs.morphs.Box(
@@ -68,11 +72,27 @@ def main():
             vis_mode="particle",
         ),
     )
+    ### mac에서는 plane을 추가하는 것때문에 gpu을 사용하지 못했음.
+    ### 이 부분을 제거하고 실행하면 사용에 문제가 없음.
+    ### taichi가 사용될 경우 문제가 발생함을 확인할 수 있음.
+    plane = scene.add_entity(
+        morph=gs.morphs.Plane(
+        pos=(0.0, 0.0, -5),  # 기존보다 낮은 위치로 변경
+        normal=(0, 0, 1),  # 노멀 방향 지정
+        ),
+    )
     ########################## build ##########################
     scene.build()
 
-    for i in range(800):
-        scene.step()
+
+
+
+    gs.tools.run_in_another_thread(
+        fn = run_sim,
+        args= (scene,True)
+    )
+
+    scene.viewer.start()
 
 
 if __name__ == "__main__":

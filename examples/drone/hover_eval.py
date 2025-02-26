@@ -14,6 +14,8 @@ def main():
     parser.add_argument("-e", "--exp_name", type=str, default="drone-hovering")
     parser.add_argument("--ckpt", type=int, default=300)
     parser.add_argument("--record", action="store_true", default=False)
+    parser.add_argument("-m","--mps", action="store_true", default=False)
+    parser.add_argument("-c","--cpu", action="store_true", default=False)
     args = parser.parse_args()
 
     gs.init()
@@ -29,6 +31,13 @@ def main():
     # set the max FPS for visualization
     env_cfg["max_visualize_FPS"] = 60
 
+    if args.mps:
+        cur_device = "mps"
+    elif args.cpu:
+        cur_device = "cpu"
+    else:
+        cur_device = "cuda"
+    
     env = HoverEnv(
         num_envs=1,
         env_cfg=env_cfg,
@@ -36,16 +45,18 @@ def main():
         reward_cfg=reward_cfg,
         command_cfg=command_cfg,
         show_viewer=True,
+        device = cur_device,
     )
 
-    runner = OnPolicyRunner(env, train_cfg, log_dir, device="cuda:0")
+    runner = OnPolicyRunner(env, train_cfg, log_dir, device=cur_device)
     resume_path = os.path.join(log_dir, f"model_{args.ckpt}.pt")
     runner.load(resume_path)
-    policy = runner.get_inference_policy(device="cuda:0")
+    policy = runner.get_inference_policy(device=cur_device)
 
     obs, _ = env.reset()
 
     max_sim_step = int(env_cfg["episode_length_s"] * env_cfg["max_visualize_FPS"])
+    
     with torch.no_grad():
         if args.record:
             env.cam.start_recording()
@@ -53,11 +64,13 @@ def main():
                 actions = policy(obs)
                 obs, _, rews, dones, infos = env.step(actions)
                 env.cam.render()
+                print(f"percent : {_/max_sim_step :.2f}")
             env.cam.stop_recording(save_to_filename="video.mp4", fps=env_cfg["max_visualize_FPS"])
         else:
             for _ in range(max_sim_step):
                 actions = policy(obs)
                 obs, _, rews, dones, infos = env.step(actions)
+                # print(f"percent : {_/max_sim_step :.2f}")
 
 
 if __name__ == "__main__":

@@ -116,7 +116,7 @@ def main():
     args = parser.parse_args()
 
     # Initialize Genesis
-    gs.init(backend=gs.cpu)
+    gs.init(backend=gs.metal)
 
     # Create scene with initial camera view
     viewer_options = gs.options.ViewerOptions(

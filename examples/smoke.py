@@ -74,7 +74,7 @@ class Jet(object):
 def main():
 
     ########################## init ##########################
-    gs.init(seed=0, precision="32", logging_level="debug")
+    gs.init(seed=0, precision="32", logging_level="debug",backend=gs.metal)
 
     video_path = Path(__file__).parent / "video"
     video_path.mkdir(exist_ok=True, parents=True)

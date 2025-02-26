@@ -4,14 +4,21 @@ import numpy as np
 
 import genesis as gs
 
+def run_sim(scene, enable_vis):
+    horizon = 400
+    for i in range(horizon):
+        scene.step()
+    if enable_vis:
+        scene.viewer.stop()
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--vis", action="store_true", default=False)
+    parser.add_argument("-c", "--cpu", action="store_true", default=False)
     args = parser.parse_args()
 
     ########################## init ##########################
-    gs.init(seed=0, precision="32", logging_level="debug")
+    gs.init(seed=0, precision="32", logging_level="debug",backend= gs.cpu if args.cpu else gs.gpu)
 
     ########################## create a scene ##########################
 
@@ -63,14 +70,17 @@ def main():
         ),
         surface=gs.surfaces.Rough(
             color=(0.6, 1.0, 0.8, 1.0),
-            vis_mode="particle",
+            vis_mode="visual",
         ),
     )
     scene.build()
+    gs.tools.run_in_another_thread(
+        fn = run_sim,
+        args = (scene,args.vis)
+    )
+    scene.viewer.start()
 
-    horizon = 400
-    for i in range(horizon):
-        scene.step()
+
 
 
 if __name__ == "__main__":

@@ -6,12 +6,12 @@ import genesis as gs
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--vis", action="store_true", default=False)
-    parser.add_argument("-m", "--mac", action="store_true", default=False)
+    parser.add_argument("-v", "--vis", action="store_true", default=True)
+    parser.add_argument("-m", "--mac", action="store_true", default=True)
     args = parser.parse_args()
 
     ########################## init ##########################
-    gs.init(backend=gs.cpu)
+    gs.init(backend=gs.metal)
 
     ########################## create a scene ##########################
     viewer_options = gs.options.ViewerOptions(

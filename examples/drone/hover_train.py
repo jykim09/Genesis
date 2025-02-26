@@ -112,6 +112,8 @@ def main():
     parser.add_argument("-v", "--vis", action="store_true", default=False)
     parser.add_argument("-B", "--num_envs", type=int, default=8192)
     parser.add_argument("--max_iterations", type=int, default=300)
+    parser.add_argument("-m","--mps", action="store_true", default=False)
+    parser.add_argument("-c","--cpu", action="store_true", default=False)
     args = parser.parse_args()
 
     gs.init(logging_level="error")
@@ -126,7 +128,14 @@ def main():
 
     if args.vis:
         env_cfg["visualize_target"] = True
-
+    
+    if args.mps:
+        cur_device = "mps"
+    elif args.cpu:
+        cur_device = "cpu"
+    else:
+        cur_device = "cuda"
+    
     env = HoverEnv(
         num_envs=args.num_envs,
         env_cfg=env_cfg,
@@ -134,9 +143,10 @@ def main():
         reward_cfg=reward_cfg,
         command_cfg=command_cfg,
         show_viewer=args.vis,
+        device = cur_device,
     )
-
-    runner = OnPolicyRunner(env, train_cfg, log_dir, device="cuda:0")
+    
+    runner = OnPolicyRunner(env, train_cfg, log_dir, device=cur_device)
 
     pickle.dump(
         [env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg],

@@ -4,6 +4,11 @@ import numpy as np
 
 import genesis as gs
 
+def run_sim(scene,enable_vis):
+    for i in range(1000):
+        scene.step()
+    if enable_vis:
+        scene.viewer.stop()
 
 def main():
     parser = argparse.ArgumentParser()
@@ -38,8 +43,9 @@ def main():
         material=mat_elastic,
         morph=gs.morphs.Mesh(
             file="meshes/dragon/dragon.obj",
-            scale=0.003,
+            scale=0.1,
             pos=(0, 0, 0.8),
+            euler = (0,0,1),
         ),
         surface=gs.surfaces.Default(
             # vis_mode='recon',
@@ -48,11 +54,16 @@ def main():
     ########################## build ##########################
     scene.build()
 
-    horizon = 1000
-    # forward pass
-    for i in range(horizon):
-        scene.step()
+    # horizon = 1000
+    # # forward pass
+    # for i in range(horizon):
+    #     scene.step()
+    gs.tools.run_in_another_thread(
+        fn = run_sim,
+        args = (scene,args.vis)
+    )
 
+    scene.viewer.start()
 
 if __name__ == "__main__":
     main()

@@ -4,7 +4,19 @@ import numpy as np
 
 import genesis as gs
 
-
+def run_sim(scene,emitter):
+    horizon = 500
+    for i in range(horizon):
+        print(i)
+        emitter.emit(
+            pos=np.array([0.5, 1.0, 3.5]),
+            direction=np.array([0.0, 0, -1.0]),
+            speed=5.0,
+            droplet_shape="circle",
+            droplet_size=0.22,
+        )
+        scene.step()
+    
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--vis", action="store_true", default=False)
@@ -29,10 +41,11 @@ def main():
             camera_fov=35,
             max_FPS=120,
         ),
-        show_viewer=args.vis,
+        show_viewer=True,
         sph_options=gs.options.SPHOptions(
             particle_size=0.02,
         ),
+        
     )
 
     plane = scene.add_entity(gs.morphs.Plane())
@@ -54,19 +67,16 @@ def main():
         ),
     )
     scene.build()
+    scene.viewer.start()
 
-    horizon = 500
-    for i in range(horizon):
-        print(i)
-        emitter.emit(
-            pos=np.array([0.5, 1.0, 3.5]),
-            direction=np.array([0.0, 0, -1.0]),
-            speed=5.0,
-            droplet_shape="circle",
-            droplet_size=0.22,
-        )
-        scene.step()
-
+    gs.tools.run_in_another_thread(
+        fn = run_sim,
+        args = (scene,emitter)
+    )
+    
+    
 
 if __name__ == "__main__":
+    
     main()
+

@@ -1,9 +1,22 @@
 import numpy as np
 import genesis as gs
 
+def run_sim(scene, robot, enable_vis):
+    for i in range(1000):
+        dofs_ctrl = np.array(
+        [ 1.0 * np.sin(2 * np.pi * i * 0.001),]* robot.n_dofs
+        )
+
+        print(dofs_ctrl)
+
+        robot.control_dofs_velocity(dofs_ctrl)
+        scene.step()
+
+    if enable_vis:
+        scene.viewer.stop()
 
 ########################## init ##########################
-gs.init(seed=0, precision="32", logging_level="debug")
+gs.init(seed=0, precision="32", logging_level="debug",backend=gs.metal)
 
 ######################## create a scene ##########################
 dt = 3e-3
@@ -47,19 +60,19 @@ robot = scene.add_entity(
         scale=0.2,
         fixed=True,
     ),
-    material=gs.materials.Hybrid(
-        mat_rigid=gs.materials.Rigid(
-            gravity_compensation=1.0,
-        ),
-        mat_soft=gs.materials.MPM.Muscle(  # to allow setting group
-            E=1e4,
-            nu=0.45,
-            rho=1000.0,
-            model="neohooken",
-        ),
-        thickness=0.05,
-        damping=1000.0,
-    ),
+    # material=gs.materials.Hybrid(
+    #     # mat_rigid=gs.materials.Rigid(
+    #     #     gravity_compensation=1.0,
+    #     # ),
+    #     # mat_soft=gs.materials.MPM.Muscle(  # to allow setting group
+    #     #     E=1e4,
+    #     #     nu=0.45,
+    #     #     rho=1000.0,
+    #     #     model="neohooken",
+    #     # ),
+    #     thickness=0.05,
+    #     damping=1000.0,
+    # ),
 )
 
 ball = scene.add_entity(
@@ -75,14 +88,10 @@ scene.build()
 
 ########################## run ##########################
 scene.reset()
-for i in range(1000):
-    dofs_ctrl = np.array(
-        [
-            1.0 * np.sin(2 * np.pi * i * 0.001),
-        ]
-        * robot.n_dofs
-    )
 
-    robot.control_dofs_velocity(dofs_ctrl)
 
-    scene.step()
+gs.tools.run_in_another_thread(
+    fn = run_sim,
+    args = (scene,robot,True)
+)
+scene.viewer.start()
