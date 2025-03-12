@@ -67,12 +67,25 @@ def main():
         ),
     )
     scene.build()
+    
+    horizon = 500
+    for i in range(horizon):
+        print(i)
+        emitter.emit(
+            pos=np.array([0.5, 1.0, 3.5]),
+            direction=np.array([0.0, 0, -1.0]),
+            speed=5.0,
+            droplet_shape="circle",
+            droplet_size=0.22,
+        )
+        scene.step()
+        
     scene.viewer.start()
 
-    gs.tools.run_in_another_thread(
-        fn = run_sim,
-        args = (scene,emitter)
-    )
+    # gs.tools.run_in_another_thread(
+    #     fn = run_sim,
+    #     args = (scene,emitter)
+    # )
     
     
 

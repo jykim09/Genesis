@@ -85,14 +85,17 @@ def main():
     scene.build()
 
 
+    for i in range(800):
+        scene.step()
+    # if enable_vis:
+    #     scene.viewer.stop()
 
+    # gs.tools.run_in_another_thread(
+    #     fn = run_sim,
+    #     args= (scene,True)
+    # )
 
-    gs.tools.run_in_another_thread(
-        fn = run_sim,
-        args= (scene,True)
-    )
-
-    scene.viewer.start()
+    # scene.viewer.start()
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import torch
 
 import genesis as gs
 
-
+# import IPython
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--vis", action="store_true", default=False)
@@ -51,6 +51,7 @@ def main():
         morph=gs.morphs.Box(
             lower=(0.2, 0.1, 0.05),
             upper=(0.4, 0.3, 0.15),
+            euler=(0, 0.0, 90.0),
         ),
         surface=gs.surfaces.Default(
             color=(0.9, 0.9, 0.9, 1.0),
@@ -70,7 +71,7 @@ def main():
         ),
         vis_mode="particle",
     )
-    ball = scene.add_entity(gs.morphs.Sphere(radius=0.04))
+    # ball = scene.add_entity(gs.morphs.Sphere(radius=0.04))
 
     ########################## cameras ##########################
     cam_0 = scene.add_camera(
@@ -85,10 +86,11 @@ def main():
         fov=30,
         GUI=True,
     )
-
+    # IPython.embed()
     ########################## build ##########################
+    
     scene.build()
-
+    
     # ###
     # state = obj1.get_state()
     # loss += torch.pow(state.pos - goal, 2).sum()
@@ -100,21 +102,21 @@ def main():
 
     ########################## forward + backward twice ##########################
     for _ in range(2):
-        cam_0.start_recording()
+        # cam_0.start_recording()
         scene.reset()
         horizon = 150
-        # init_pos = gs.tensor([0.3, 0.1, 0.28], requires_grad=True)
-        init_pos = torch.tensor([0.3, 0.1, 0.28], requires_grad=True)
+        init_pos = gs.tensor([0.3, 0.1, 0.28], requires_grad=True)
+        # init_pos = torch.tensor([0.3, 0.1, 0.28], requires_grad=True)
                 
         # forward pass
         print("forward")
         timer = gs.tools.Timer()
         stick.set_position(init_pos)
-        # v_obj1_init = gs.tensor([0.0, -1.0, 0.0], requires_grad=True)
-        v_obj1_init = torch.tensor([0.0, -1.0, 0.0], requires_grad=True)
+        v_obj1_init = gs.tensor([0.0, -1.0, 0.0], requires_grad=True)
+        # v_obj1_init = torch.tensor([0.0, -1.0, 0.0], requires_grad=True)
         obj1.set_velocity(v_obj1_init)
-        # pos_obj1_init = gs.tensor([0.3, 0.3, 0.1], requires_grad=True)
-        pos_obj1_init = torch.tensor([0.3, 0.3, 0.1], requires_grad=True)
+        pos_obj1_init = gs.tensor([0.3, 0.3, 0.1], requires_grad=True)
+        # pos_obj1_init = torch.tensor([0.3, 0.3, 0.1], requires_grad=True)
 
         obj1.set_position(pos_obj1_init)
         loss = 0
@@ -122,8 +124,8 @@ def main():
         w_list = []
         for i in range(horizon):
             
-            # v_i = gs.tensor([0.0, 1.0, 0.0], requires_grad=True)
-            v_i = torch.tensor([0.0, 1.0, 0.0], requires_grad=True)
+            v_i = gs.tensor([0.0, 1.0, 0.0], requires_grad=True)
+            # v_i = torch.tensor([0.0, 1.0, 0.0], requires_grad=True)
 
             # w_i = gs.tensor([2.0, 0.0, 0.0], requires_grad=True)
             # stick.set_velocity(vel=v_i, ang=w_i)
@@ -132,26 +134,26 @@ def main():
             # w_list.append(w_i)
 
             scene.step()
-            img0 = cam_0.render()
-            img1 = cam_1.render()
+            # img0 = cam_0.render()
+            # img1 = cam_1.render()
 
             # you can use a scene_state
             if i == 25:
                 # compute loss
-                # goal = gs.tensor([0.5, 0.8, 0.05])
-                goal = torch.tensor([0.5, 0.8, 0.05])
+                goal = gs.tensor([0.5, 0.8, 0.05])
+                # goal = torch.tensor([0.5, 0.8, 0.05])
                 mpm_particles = scene.get_state().solvers_state[3]
                 loss += torch.pow(mpm_particles.pos[mpm_particles.active == 1] - goal, 2).sum()
 
             # you can also use an entity's state
             if i == horizon - 1:
                 # compute loss
-                # goal = gs.tensor([0.5, 0.8, 0.05])
-                goal = torch.tensor([0.5, 0.8, 0.05])
+                goal = gs.tensor([0.5, 0.8, 0.05])
+                # goal = torch.tensor([0.5, 0.8, 0.05])
                 state = obj1.get_state()
                 loss += torch.pow(state.pos - goal, 2).sum()
                 print(loss)
-
+        # cam_0.stop_recording()
         timer.stamp("forward took: ")
         # backward pass
         print("backward")
@@ -166,8 +168,8 @@ def main():
         print(init_pos.grad)
         print(v_obj1_init.grad)
         print(pos_obj1_init.grad)
-        init_pos.zero_grad()
-
+    print("Fin")
+    print(state.pos)
 
 if __name__ == "__main__":
     main()

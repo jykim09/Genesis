@@ -12,7 +12,7 @@ def run_sim(scene, enable_vis):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--vis", action="store_true", default=False)
-    parser.add_argument("-ㅊ", "--cpu", action="store_true", default=False)
+    parser.add_argument("-c", "--cpu", action="store_true", default=False)
     args = parser.parse_args()
 
     ########################## init ##########################
@@ -21,7 +21,7 @@ def main():
 
     scene = gs.Scene(
         sim_options=gs.options.SimOptions(
-            dt=2e-3,
+            dt=3e-5,
             gravity = (0, 0, -10)
         ),
         viewer_options=gs.options.ViewerOptions(
@@ -46,10 +46,12 @@ def main():
     )
     scene.build()
 
-    gs.tools.run_in_another_thread(
-        fn = run_sim,
-        args =(scene,args.vis)
-    )
+    for i in range(1000):
+        scene.step()
+    # gs.tools.run_in_another_thread(
+    #     fn = run_sim,
+    #     args =(scene,args.vis)
+    # )
 
     scene.viewer.start()
 

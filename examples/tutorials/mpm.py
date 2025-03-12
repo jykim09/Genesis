@@ -53,6 +53,7 @@ obj_sand = scene.add_entity(
     ),
 )
 
+
 obj_plastic = scene.add_entity(
     material=gs.materials.MPM.ElastoPlastic(),
     morph=gs.morphs.Sphere(

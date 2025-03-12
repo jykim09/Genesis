@@ -2,6 +2,11 @@ import argparse
 
 import genesis as gs
 
+def run_sim(scene,enable_vis):
+    for i in range(1000):
+        scene.step()
+    if enable_vis:
+        scene.viewer.stop()
 
 def main():
 
@@ -43,8 +48,14 @@ def main():
 
     ########################## build ##########################
     scene.build()
-    for i in range(1000):
-        scene.step()
+
+    gs.tools.run_in_another_thread(
+        fn=run_sim,
+        args=(scene, args.vis),
+    )
+
+    if args.vis:
+        scene.viewer.start()
 
 
 if __name__ == "__main__":
